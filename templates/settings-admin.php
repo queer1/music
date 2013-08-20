@@ -21,24 +21,24 @@
  *
  */
 
-namespace OCA\Music\Backgroundjob;
+/**
+ * TODO: Proper extractor
+ *
+ * Translation note: Keep in mind to update the fake-template.php with the string which
+ * has to be translated, because just that file is scanned by the extractor
+ */
 
-use \OCA\Music\DependencyInjection\DIContainer;
+?>
 
-class CleanUp {
-
-	/**
-	 * Calls the cleanup method of the scanner
-	 */
-	public static function run() {
-		$container = new DIContainer();
-
-		// remove orphaned entities
-		$container['Scanner']->cleanUp();
-		// find covers - TODO performance stuff - maybe just call this once in an hour
-		$container['AlbumBusinessLayer']->findCovers();
-
-		// remove expired sessions
-		$container['AmpacheSessionMapper']->cleanUp();
-	}
-}
+<fieldset class="personalblock" id="music-admin">
+	<h2><?php p($l->t('Music')); ?></h2>
+	<div>
+		<input type="checkbox" id="music-enable-ampache"
+			<?php if($_['ampacheEnabled']){ ?>
+				checked="checked"
+			<?php } ?> />
+		<label for="music-enable-ampache"><?php p($l->t('Enable Ampache support')) ?></label><br />
+		<em><?php p($l->t('This weakens your ownCloud instance because it generates unsalted hashes
+		of the user passwords. (Just for users who have enabled this feature.)')); ?></em>
+	</div>
+</fieldset>

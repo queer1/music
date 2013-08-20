@@ -46,5 +46,36 @@ $this->create('music_log', '/api/log')->post()->action(
 	}
 );
 
+/**
+ * AJAX
+ */
+$this->create('music_admin_settings_post', '/api/admin/settings')->post()->action(
+	function($params){
+		App::main('SettingController', 'adminSetting', $params, new DIContainer());
+	}
+);
+$this->
+create('music_user_settings_post', '/api/user/settings')->post()->action(
+	function($params){
+		App::main('SettingController', 'userSetting', $params, new DIContainer());
+	}
+);
+
 // include external API
 require_once __DIR__ . '/api.php';
+
+/**
+ * Ampache API http://ampache.org/wiki/dev:xmlapi
+ */
+
+$this->create('music_ampache', '/ampache')->get()->action(
+	function($params){
+		App::main('AmpacheController', 'ampache', $params, new DIContainer());
+	}
+);
+
+$this->create('music_ampache_alternative', '/ampache/server/xml.server.php')->get()->action(
+	function($params){
+		App::main('AmpacheController', 'ampache', $params, new DIContainer());
+	}
+);

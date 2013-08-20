@@ -58,6 +58,10 @@ $api->connectHook(
 	\OC\Files\Filesystem::CLASSNAME, \OC\Files\Filesystem::signal_delete,
 	'OCA\Music\Utility\HookHandler', 'fileDeleted'
 );
+$api->connectHook(
+	'OC_User', 'post_login',
+	'OCA\Music\Utility\HookHandler', 'login'
+);
 
 $api->addRegularTask('OCA\Music\Backgroundjob\CleanUp', 'run');
 
@@ -67,4 +71,9 @@ $api->addScript('public/fileactions');
 // load file for public sharing page
 $api->addScript('public/musicFilePlayer');
 
+// register search provider
 \OC_Search::registerProvider('OCA\Music\Utility\Search');
+
+// register admin settings
+$api->registerAdmin('settings/admin');
+$api->registerPersonal('settings/user');

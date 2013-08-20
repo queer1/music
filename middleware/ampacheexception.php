@@ -21,24 +21,9 @@
  *
  */
 
-namespace OCA\Music\Backgroundjob;
 
-use \OCA\Music\DependencyInjection\DIContainer;
+namespace OCA\Music\Middleware;
 
-class CleanUp {
+class AmpacheException extends \Exception {
 
-	/**
-	 * Calls the cleanup method of the scanner
-	 */
-	public static function run() {
-		$container = new DIContainer();
-
-		// remove orphaned entities
-		$container['Scanner']->cleanUp();
-		// find covers - TODO performance stuff - maybe just call this once in an hour
-		$container['AlbumBusinessLayer']->findCovers();
-
-		// remove expired sessions
-		$container['AmpacheSessionMapper']->cleanUp();
-	}
 }

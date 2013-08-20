@@ -21,24 +21,14 @@
  *
  */
 
-namespace OCA\Music\Backgroundjob;
+// TODO move to AppFramework style
 
-use \OCA\Music\DependencyInjection\DIContainer;
+namespace OCA\Music;
 
-class CleanUp {
+\OCP\Util::addScript('music', 'public/settings-admin');
 
-	/**
-	 * Calls the cleanup method of the scanner
-	 */
-	public static function run() {
-		$container = new DIContainer();
+$tmpl = new \OCP\Template('music', 'settings-admin');
+$ampacheEnabled = \OCP\Config::getAppValue('music', 'ampacheEnabled', '') !== '';
+$tmpl->assign('ampacheEnabled', $ampacheEnabled);
 
-		// remove orphaned entities
-		$container['Scanner']->cleanUp();
-		// find covers - TODO performance stuff - maybe just call this once in an hour
-		$container['AlbumBusinessLayer']->findCovers();
-
-		// remove expired sessions
-		$container['AmpacheSessionMapper']->cleanUp();
-	}
-}
+return $tmpl->fetchPage();

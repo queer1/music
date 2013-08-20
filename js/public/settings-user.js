@@ -1,5 +1,3 @@
-<?php
-
 /**
  * ownCloud - Music app
  *
@@ -21,24 +19,27 @@
  *
  */
 
-namespace OCA\Music\Backgroundjob;
 
-use \OCA\Music\DependencyInjection\DIContainer;
-
-class CleanUp {
-
-	/**
-	 * Calls the cleanup method of the scanner
-	 */
-	public static function run() {
-		$container = new DIContainer();
-
-		// remove orphaned entities
-		$container['Scanner']->cleanUp();
-		// find covers - TODO performance stuff - maybe just call this once in an hour
-		$container['AlbumBusinessLayer']->findCovers();
-
-		// remove expired sessions
-		$container['AmpacheSessionMapper']->cleanUp();
+$(document).ready(function(){
+	var musicSettings = {
+		save: function() {
+			var data = {
+					ampacheEnabled: $('#music-enable-ampache').attr('checked') === "checked"
+				},
+				// dirty route creation, but there is no JS function that provide this URL format
+				route = OC.webroot + '/index.php/apps/music/api/user/settings';
+			$.post(route, data, musicSettings.afterSave);
+		},
+		afterSave: function(result) {
+			if(result.success !== true) {
+				// revert changes on failure
+				if($('#music-enable-ampache').attr('checked') === 'checked') {
+					$('#music-enable-ampache').removeAttr('checked');
+				} else {
+					$('#music-enable-ampache').attr('checked', 'checked');
+				}
+			}
+		}
 	}
-}
+	$('#music-enable-ampache').change(musicSettings.save);
+});

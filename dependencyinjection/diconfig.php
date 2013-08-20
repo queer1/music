@@ -28,16 +28,25 @@ namespace OCA\Music\DependencyInjection;
 use \OCA\Music\BusinessLayer\AlbumBusinessLayer;
 use \OCA\Music\BusinessLayer\ArtistBusinessLayer;
 use \OCA\Music\BusinessLayer\TrackBusinessLayer;
+use \OCA\Music\Controller\AmpacheController;
 use \OCA\Music\Controller\ApiController;
 use \OCA\Music\Controller\LogController;
 use \OCA\Music\Controller\PageController;
+use \OCA\Music\Controller\SettingController;
 use \OCA\Music\Core\API;
 use \OCA\Music\DB\AlbumMapper;
+use \OCA\Music\DB\AmpacheSessionMapper;
+use \OCA\Music\DB\AmpacheUserMapper;
+use \OCA\Music\DB\AmpacheUserStatusMapper;
 use \OCA\Music\DB\ArtistMapper;
 use \OCA\Music\DB\TrackMapper;
 use \OCA\Music\DB\ScanStatusMapper;
+use \OCA\Music\Middleware\AmpacheMiddleware;
+use \OCA\Music\Utility\AmpacheUser;
 use \OCA\Music\Utility\ExtractorGetID3;
 use \OCA\Music\Utility\Scanner;
+
+use \OCA\Music\AppFramework\Middleware\MiddlewareDispatcher;
 
 // in stable5 getid3 is already loaded
 if(!class_exists('getid3_exception')) {
@@ -65,12 +74,33 @@ $this['LogController'] = $this->share(function($c){
 	return new LogController($c['API'], $c['Request']);
 });
 
+$this['AmpacheController'] = $this->share(function($c){
+	return new AmpacheController($c['API'], $c['Request'], $c['AmpacheUserMapper'], $c['AmpacheSessionMapper'],
+		$c['AlbumMapper'], $c['ArtistMapper'], $c['TrackMapper'], $c['AmpacheUser']);
+});
+
+$this['SettingController'] = $this->share(function($c){
+	return new SettingController($c['API'], $c['Request'], $c['AmpacheUserStatusMapper'], $c['AmpacheUserMapper']);
+});
+
 /**
  * Mappers
  */
 
 $this['AlbumMapper'] = $this->share(function($c){
 	return new AlbumMapper($c['API']);
+});
+
+$this['AmpacheSessionMapper'] = $this->share(function($c){
+	return new AmpacheSessionMapper($c['API']);
+});
+
+$this['AmpacheUserMapper'] = $this->share(function($c){
+	return new AmpacheUserMapper($c['API']);
+});
+
+$this['AmpacheUserStatusMapper'] = $this->share(function($c){
+	return new AmpacheUserStatusMapper($c['API']);
 });
 
 $this['ArtistMapper'] = $this->share(function($c){
@@ -101,6 +131,15 @@ $this['AlbumBusinessLayer'] = $this->share(function($c){
  * Utilities
  */
 
+$this['AmpacheUser'] = $this->share(function($c){
+	return new AmpacheUser();
+});
+
+$this['Scanner'] = $this->share(function($c){
+	return new Scanner($c['API'], $c['ExtractorGetID3'], $c['ArtistBusinessLayer'],
+		$c['AlbumBusinessLayer'], $c['TrackBusinessLayer']);
+});
+
 $this['ScanStatusMapper'] = $this->share(function($c){
 	return new ScanStatusMapper($c['API']);
 });
@@ -123,4 +162,21 @@ $this['ExtractorGetID3'] = $this->share(function($c){
 $this['Scanner'] = $this->share(function($c){
 	return new Scanner($c['API'], $c['ExtractorGetID3'], $c['ArtistBusinessLayer'],
 		$c['AlbumBusinessLayer'], $c['TrackBusinessLayer']);
+});
+
+/**
+ * Middleware
+ */
+
+$this['AmpacheMiddleware'] = $this->share(function($c){
+	return new AmpacheMiddleware($c['API'], $c['Request'], $c['AmpacheSessionMapper'], $c['AmpacheUser']);
+});
+
+$this['MiddlewareDispatcher'] = $this->share(function($c){
+	$dispatcher = new MiddlewareDispatcher();
+	$dispatcher->registerMiddleware($c['AmpacheMiddleware']);
+	$dispatcher->registerMiddleware($c['HttpMiddleware']);
+	$dispatcher->registerMiddleware($c['SecurityMiddleware']);
+
+	return $dispatcher;
 });

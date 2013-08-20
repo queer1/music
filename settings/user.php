@@ -21,24 +21,25 @@
  *
  */
 
-namespace OCA\Music\Backgroundjob;
+// TODO move to AppFramework style
+
+namespace OCA\Music;
 
 use \OCA\Music\DependencyInjection\DIContainer;
 
-class CleanUp {
+$c = new DIContainer();
 
-	/**
-	 * Calls the cleanup method of the scanner
-	 */
-	public static function run() {
-		$container = new DIContainer();
-
-		// remove orphaned entities
-		$container['Scanner']->cleanUp();
-		// find covers - TODO performance stuff - maybe just call this once in an hour
-		$container['AlbumBusinessLayer']->findCovers();
-
-		// remove expired sessions
-		$container['AmpacheSessionMapper']->cleanUp();
-	}
+if($c['API']->getAppValue('ampacheEnabled') === '') { // defaults to '' if not found
+	// don't show the config option in the user settings if ampache is disabled by the admin
+	return '';
 }
+
+$c['API']->addScript('public/settings-user');
+
+\OCP\Util::addStyle('music', 'settings-user');
+$tmpl = new \OCP\Template('music', 'settings-user');
+
+$ampacheEnabled = $c['AmpacheUserStatusMapper']->isAmpacheUser($c['API']->getUserId());
+$tmpl->assign('ampacheEnabled', $ampacheEnabled);
+
+return $tmpl->fetchPage();
